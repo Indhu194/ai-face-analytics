@@ -1,0 +1,25 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and scratch files
+*.log
+scratch/
+.system_generated/
+
+# Streamlit local config & secrets
+.streamlit/secrets.toml
