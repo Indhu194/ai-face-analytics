@@ -558,6 +558,38 @@ def compute_group_summary(results, bgr_image=None):
     }
 
 
+def _parse_gender_vote(face_obj):
+    """
+    Robustly extract gender prediction from InsightFace object.
+    Returns 1 for Male, 0 for Female.
+    """
+    if face_obj is None:
+        return 0
+
+    g = getattr(face_obj, 'gender', getattr(face_obj, 'sex', None))
+
+    if g is None:
+        return 0
+
+    if isinstance(g, (int, np.integer)):
+        return 1 if int(g) == 1 else 0
+    elif isinstance(g, (bool, np.bool_)):
+        return 1 if bool(g) else 0
+    elif isinstance(g, str):
+        s = g.strip().upper()
+        if s in ['M', 'MALE', '1']:
+            return 1
+        return 0
+    elif isinstance(g, (list, tuple, np.ndarray)):
+        arr = np.asarray(g).flatten()
+        if len(arr) >= 2:
+            return 1 if float(arr[1]) > float(arr[0]) else 0
+        elif len(arr) == 1:
+            return 1 if float(arr[0]) >= 0.5 else 0
+
+    return 0
+
+
 # ─── Multi-Face Deep Ensemble Analysis Pipeline ───
 
 def analyze_faces(bgr_image, analyzer=None, progress_fn=None, progress_callback=None, fast_mode=False, **kwargs):
@@ -636,42 +668,48 @@ def analyze_faces(bgr_image, analyzer=None, progress_fn=None, progress_callback=
 
         # 1. Multi-view predictions collection
         age_preds = [float(face.age)]
-        gender_code = getattr(face, 'gender', None)
-        if gender_code is None:
-            gender_code = getattr(face, 'sex', 0)
-        gender_votes = [1 if gender_code == 1 else 0]
+        gender_votes = [_parse_gender_vote(face)]
 
         # Match across illumination-enhanced frame
         match_enh = _match_face(ref_bbox, faces_enh, is_flipped=False, img_w=img_w)
         if match_enh:
             age_preds.append(float(match_enh.age))
-            g_enh = getattr(match_enh, 'gender', getattr(match_enh, 'sex', 0))
-            gender_votes.append(1 if g_enh == 1 else 0)
+            gender_votes.append(_parse_gender_vote(match_enh))
 
         # Match across mirrored frame
         match_flip = _match_face(ref_bbox, faces_flip, is_flipped=True, img_w=img_w)
         if match_flip:
             age_preds.append(float(match_flip.age))
-            g_flip = getattr(match_flip, 'gender', getattr(match_flip, 'sex', 0))
-            gender_votes.append(1 if g_flip == 1 else 0)
+            gender_votes.append(_parse_gender_vote(match_flip))
 
         # 2. Extract Biometric Morphology Cues (Facial hair & hair volume)
         morph = extract_biometric_morphology(bgr_image, ref_bbox, kps)
 
-        # 3. Robust Gender Classification with Physical Morphology & Neural Consensus
-        if morph.get('facial_hair_detected', False) and morph.get('facial_hair_score', 0.0) > 0.22:
-            # Physical facial hair (mustache/beard/stubble) is definitively Male
+        # 3. Robust High-Accuracy Gender Classification
+        has_facial_hair = morph.get('facial_hair_detected', False) and morph.get('facial_hair_score', 0.0) > 0.18
+        has_long_hair = morph.get('hair_length') in ['Long', 'Medium']
+        male_votes = sum(gender_votes)
+        neural_says_male = male_votes > (len(gender_votes) / 2.0)
+
+        if has_facial_hair:
+            # Facial hair / beard / stubble is a 100% definitive male biological trait
             final_gender = "Male"
-            gender_conf = 0.99
-        elif morph.get('hair_length') in ['Long', 'Medium'] and not morph.get('facial_hair_detected', False):
-            # Long/medium hair without facial hair indicates Female
+            gender_conf = 99.0
+        elif has_long_hair and not has_facial_hair:
+            # Long/medium hair without facial hair strongly indicates female
             final_gender = "Female"
-            gender_conf = 0.98
+            gender_conf = 98.0
+        elif not has_facial_hair and not neural_says_male:
+            # Clean face with female neural vote is female
+            final_gender = "Female"
+            gender_conf = 97.0
+        elif not has_facial_hair and neural_says_male:
+            # Clean face with male neural vote
+            final_gender = "Male" if male_votes >= len(gender_votes) else "Female"
+            gender_conf = 92.0
         else:
-            # For short hair without facial hair, use majority neural vote across TTA views
-            male_votes = sum(gender_votes)
-            final_gender = "Male" if male_votes >= (len(gender_votes) / 2.0) else "Female"
-            gender_conf = 0.95
+            final_gender = "Female" if not neural_says_male else "Male"
+            gender_conf = 90.0
 
         # 4. Robust Age Range & Variance with Camera Illumination Calibration
         raw_median_age = float(np.median(age_preds))
