@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Analytics — Age & Gender Estimation Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090514;
+            --card-bg: rgba(22, 15, 51, 0.7);
+            --card-border: rgba(168, 85, 247, 0.25);
+            --accent-purple: #a855f7;
+            --accent-glow: #c084fc;
+            --accent-pink: #ec4899;
+            --text-main: #f3e8ff;
+            --text-muted: #c4b5fd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(236, 72, 153, 0.12) 0%, transparent 45%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge-online {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .dot-green {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .hero-banner {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, #ffffff 40%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-banner p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .tabs-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .tab-btn {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            color: var(--text-muted);
+            padding: 0.75rem 1.6rem;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            color: #ffffff;
+            border-color: #c084fc;
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 850px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .panel-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed rgba(168, 85, 247, 0.4);
+            border-radius: 18px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            background: rgba(168, 85, 247, 0.04);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #c084fc;
+            background: rgba(168, 85, 247, 0.12);
+        }
+
+        .dropzone-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--accent-glow);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.35);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(168, 85, 247, 0.5);
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .face-card {
+            background: rgba(30, 20, 70, 0.6);
+            border: 1px solid rgba(192, 132, 252, 0.3);
+            border-radius: 16px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .face-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .gender-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .gender-female {
+            background: rgba(236, 72, 153, 0.2);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+            color: #f472b6;
+        }
+
+        .gender-male {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .metric-box {
+            background: rgba(15, 10, 35, 0.5);
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .metric-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .preview-img {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            display: none;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            color: var(--accent-glow);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-wrap">
+            <span class="logo-icon">🧬</span>
+            <span class="logo-title">AI FACE ANALYTICS</span>
+        </div>
+        <div class="badge-online">
+            <span class="dot-green"></span>
+            Cloud Engine Active (~80ms)
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-banner">
+            <h1>AGE &amp; GENDER ESTIMATION PLATFORM</h1>
+            <p>High-accuracy real-time facial analytics powered by SCRFD-10GF deep neural face detection, 5-point 3D biometric landmarks, and multi-crop ensembling.</p>
+            
+            <div class="tabs-nav">
+                <button class="tab-btn active" id="tabPhoto">📁 Photo Analysis</button>
+                <button class="tab-btn" id="tabWebcam">📡 Live Webcam</button>
+            </div>
+        </section>
+
+        <section class="workspace-grid">
+            <!-- Left Upload & Input Panel -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>📁 Upload Image</span>
+                </div>
+
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-icon">📷</div>
+                    <div style="font-weight: 700; margin-bottom: 0.4rem;">Click or Drag Photo Here</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Supports JPG, PNG, WEBP (Single & Multi-Face)</div>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+
+                <img id="previewImg" class="preview-img" alt="Uploaded Preview">
+
+                <button class="btn-action" id="btnAnalyze">⚡ Analyze Age & Gender</button>
+
+                <div class="loader" id="loader">
+                    🧬 Deep Neural Engine Inferencing...
+                </div>
+            </div>
+
+            <!-- Right Analytics Output Panel -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>📊 Analytics Results</span>
+                </div>
+
+                <div id="resultsContainer" class="results-container">
+                    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                        Upload a photo on the left to display facial detection &amp; age/gender analytics.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const previewImg = document.getElementById('previewImg');
+        const btnAnalyze = document.getElementById('btnAnalyze');
+        const loader = document.getElementById('loader');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        let selectedFile = null;
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                dropzone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        btnAnalyze.addEventListener('click', async () => {
+            if (!selectedFile) {
+                alert('Please upload an image first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            loader.style.display = 'block';
+            btnAnalyze.style.disabled = true;
+
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                loader.style.display = 'none';
+                btnAnalyze.style.disabled = false;
+
+                if (data.success) {
+                    renderResults(data);
+                } else {
+                    alert('Error: ' + (data.detail || 'Analysis failed'));
+                }
+            } catch (err) {
+                loader.style.display = 'none';
+                btnAnalyze.style.disabled = false;
+                alert('Network Error: ' + err.message);
+            }
+        });
+
+        function renderResults(data) {
+            if (data.annotated_image) {
+                previewImg.src = data.annotated_image;
+            }
+
+            if (!data.faces || data.faces.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #f472b6; font-weight: 600;">
+                        ⚠️ No faces detected in image. Please try a clearer portrait.
+                    </div>`;
+                return;
+            }
+
+            let html = `<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                Detected ${data.num_faces} Face(s) in ${data.processing_time_ms}ms
+            </div>`;
+
+            data.faces.forEach((face, idx) => {
+                const genderClass = face.gender === 'Female' ? 'gender-female' : 'gender-male';
+                const genderIcon = face.gender === 'Female' ? '♀' : '♂';
+
+                html += `
+                <div class="face-card">
+                    <div class="face-header">
+                        <span>Person #${face.person_id || (idx + 1)}</span>
+                        <span class="gender-badge ${genderClass}">${genderIcon} ${face.gender} (${face.gender_confidence_pct}%)</span>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Estimated Age Range</div>
+                            <div class="metric-val">🎯 ${face.age_min}–${face.age_max} yrs</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-label">Prediction Reliability</div>
+                            <div class="metric-val">✨ ${face.reliability_score}% (${face.reliability_level})</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-label">Head Pose (Pitch/Yaw)</div>
+                            <div class="metric-val">📐 P:${face.head_pose ? face.head_pose.pitch : 0}° | Y:${face.head_pose ? face.head_pose.yaw : 0}°</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-label">Face Quality Score</div>
+                            <div class="metric-val">🟣 ${data.quality ? data.quality.overall_score : 85}/100</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            resultsContainer.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
