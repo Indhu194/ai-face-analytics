@@ -829,6 +829,19 @@ Track real session throughput, demographics breakdown, quality score distributio
 <div style="font-size:0.8rem; color:#c4b5fd;">Switch to <strong>📁 Upload Photo Analysis</strong>, <strong>📂 Batch Image Analysis</strong>, or <strong>📡 Live Webcam Mode</strong> to get started.</div>
 </div>""", unsafe_allow_html=True)
 
+    # ─── Phase 4 Privacy Notice & Ethical AI Disclaimer ───
+    st.markdown("""
+    <div class="tips-box" style="margin-top:1.5rem; border-color:rgba(168,85,247,0.35); background:rgba(18,12,38,0.75);">
+        <div style="display:flex; align-items:center; gap:0.6rem; font-weight:700; color:#c084fc; font-size:0.96rem; margin-bottom:0.4rem;">
+            <span>🛡️ Privacy Notice &amp; Responsible AI Usage</span>
+        </div>
+        <div style="font-size:0.83rem; color:#c4b5fd; line-height:1.6;">
+            🔒 <strong>Data Privacy Guarantee:</strong> Uploaded images are processed transiently in volatile server memory for real-time analysis. No uploaded photos, facial bounding boxes, or biometric templates are stored, logged, or retained on external servers.<br>
+            ⚠️ <strong>AI Estimation Disclaimer:</strong> Age and appearance-based gender predictions are AI-generated estimates and may not always be 100% accurate under non-ideal lighting or extreme angles. This system is designed solely for technical research and educational analytics, and does not determine identity, personality, or sensitive personal traits.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ─── TAB 1: Upload Photo Analysis ───
 with main_tabs[1]:
