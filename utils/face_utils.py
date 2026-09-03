@@ -35,18 +35,21 @@ def _get_deepface():
     return _deepface_fn
 
 
-# ─── Initialization ───
-
-def init_analyzer(det_size=(640, 640)):
-    """Initialize InsightFace FaceAnalysis with buffalo_l model pack."""
-    analyzer = FaceAnalysis(
-        name='buffalo_l',
-        allowed_modules=['detection', 'genderage'],
-        providers=['CPUExecutionProvider']
-    )
-    analyzer.prepare(ctx_id=-1, det_size=det_size)
-    _get_deepface()
-    return analyzer
+def init_analyzer(det_size=(480, 480)):
+    """Initialize InsightFace FaceAnalysis with robust model download & fallback handling."""
+    for model_name in ['buffalo_l', 'buffalo_s']:
+        try:
+            analyzer = FaceAnalysis(
+                name=model_name,
+                allowed_modules=['detection', 'genderage'],
+                providers=['CPUExecutionProvider']
+            )
+            analyzer.prepare(ctx_id=-1, det_size=det_size)
+            _get_deepface()
+            return analyzer
+        except Exception:
+            continue
+    return None
 
 
 # Alias for backward compatibility

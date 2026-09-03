@@ -403,7 +403,10 @@ Online (~80ms)
 # ─── Model Loading ───
 @st.cache_resource
 def load_analyzer():
-    return init_analyzer(det_size=(480, 480))
+    try:
+        return init_analyzer(det_size=(480, 480))
+    except Exception as e:
+        return None
 
 with st.spinner("Initializing Deep Neural Engine (SCRFD-10GF + InsightFace)..."):
     analyzer = load_analyzer()
