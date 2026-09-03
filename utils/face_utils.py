@@ -109,6 +109,37 @@ def enhance_webcam_illumination(bgr_image):
         return bgr_image
 
 
+STANDARD_5KPS_224 = np.array([
+    [70.0, 78.0],
+    [154.0, 78.0],
+    [112.0, 126.0],
+    [78.0, 168.0],
+    [146.0, 168.0]
+], dtype=np.float32)
+
+
+def align_face_5point(bgr_image, kps, output_size=224):
+    """
+    Visage-grade 5-Point Sub-Pixel Similarity Transformation Alignment.
+    Aligns left eye, right eye, nose, and mouth corners to standard reference coordinates.
+    """
+    if kps is None or len(kps) < 5:
+        return None
+    try:
+        src_pts = np.array(kps[:5], dtype=np.float32)
+        scale = output_size / 224.0
+        dst_pts = STANDARD_5KPS_224 * scale
+
+        M, _ = cv2.estimateAffinePartial2D(src_pts, dst_pts)
+        if M is None:
+            return None
+
+        aligned = cv2.warpAffine(bgr_image, M, (output_size, output_size), flags=cv2.INTER_CUBIC)
+        return aligned
+    except Exception:
+        return None
+
+
 def _crop_face(bgr_image, bbox, margin=0.25, size=224):
     """
     Crop face with margin and resize. Single source of truth for all crops.
