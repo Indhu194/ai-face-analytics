@@ -400,16 +400,22 @@ Online (~80ms)
 </div>
 </div>""", unsafe_allow_html=True)
 
-# ─── Model Loading ───
+# ─── Model Loading (Lazy Loaded On-Demand to Ensure Instant Page Load) ───
 @st.cache_resource
 def load_analyzer():
     try:
         return init_analyzer(det_size=(480, 480))
     except Exception as e:
+        print(f"Analyzer initialization error: {e}")
         return None
 
-with st.spinner("Initializing Deep Neural Engine (SCRFD-10GF + InsightFace)..."):
-    analyzer = load_analyzer()
+def get_analyzer():
+    if "analyzer" not in st.session_state or st.session_state["analyzer"] is None:
+        st.session_state["analyzer"] = load_analyzer()
+    return st.session_state["analyzer"]
+
+# Initialize placeholder for lazy model loading
+analyzer = None
 
 # ─── Inference & Drawing Functions ───
 
@@ -460,7 +466,8 @@ def run_staged_inference(bgr_image, status_placeholder, fast_mode=False):
     stage_status["init"] = "active"
     render_checklist("init")
     t0 = time.time()
-    results = analyze_faces(bgr_image, analyzer, progress_fn=progress_callback, fast_mode=fast_mode)
+    active_analyzer = get_analyzer()
+    results = analyze_faces(bgr_image, active_analyzer, progress_fn=progress_callback, fast_mode=fast_mode)
     latency_ms = (time.time() - t0) * 1000.0
 
     for k, _ in all_stages:
