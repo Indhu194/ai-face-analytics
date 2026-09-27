@@ -34,6 +34,9 @@ from face_utils import (
 )
 from report_utils import generate_html_report, export_csv
 
+# Global AI analyzer instance
+analyzer = None
+
 # Initialize FastAPI App
 app = FastAPI(
     title="AI Face Analytics API",
