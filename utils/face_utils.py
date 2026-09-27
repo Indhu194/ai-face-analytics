@@ -35,9 +35,9 @@ def _get_deepface():
     return _deepface_fn
 
 
-def init_analyzer(det_size=(480, 480)):
-    """Initialize InsightFace FaceAnalysis with robust model download & fallback handling."""
-    for model_name in ['buffalo_l', 'buffalo_s']:
+def init_analyzer(det_size=(320, 320)):
+    """Initialize InsightFace FaceAnalysis with ultra-fast model download & fallback handling."""
+    for model_name in ['buffalo_s', 'buffalo_l']:
         try:
             analyzer = FaceAnalysis(
                 name=model_name,
@@ -45,9 +45,9 @@ def init_analyzer(det_size=(480, 480)):
                 providers=['CPUExecutionProvider']
             )
             analyzer.prepare(ctx_id=-1, det_size=det_size)
-            _get_deepface()
             return analyzer
-        except Exception:
+        except Exception as e:
+            print(f"Model {model_name} initialization info: {e}")
             continue
     return None
 
