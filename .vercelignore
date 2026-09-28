@@ -1,0 +1,19 @@
+# Exclude heavy non-runtime assets from Vercel Serverless Function bundle
+cloudflared.exe
+*.docx
+*.zip
+*.onnx
+data/
+model/
+app/
+venv/
+scratch/
+__pycache__/
+*.jpg
+*.png
+*.pdf
+generate_report.js
+Dockerfile
+render.yaml
+packages.txt
+runtime.txt

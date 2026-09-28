@@ -21,6 +21,11 @@ Thumbs.db
 scratch/
 .system_generated/
 
+# Executables & heavy assets
+cloudflared.exe
+*.docx
+*.zip
+
 # Streamlit local config & secrets
 .streamlit/secrets.toml
 
